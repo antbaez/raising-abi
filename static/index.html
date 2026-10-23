@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Raising ABI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lora:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <a class="logo" href="/"><span class="logo-title">Raising ABI</span><em class="logo-sub">Artificial Baby Intelligence</em></a>
+  </nav>
+
+  <main class="app">
+    <div class="card-head" id="card-head">
+      <div class="tabs" role="tablist">
+        <button class="tab active" id="tab-camera" role="tab">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4.5 7.6 6.5H5A2.5 2.5 0 0 0 2.5 9v8.5A2.5 2.5 0 0 0 5 20h14a2.5 2.5 0 0 0 2.5-2.5V9A2.5 2.5 0 0 0 19 6.5h-2.6L15 4.5H9Zm3 4a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9Z"/></svg>
+          Take photo
+        </button>
+        <button class="tab" id="tab-saved" role="tab">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm7 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM2 19c0-3 2.9-5.5 6.5-5.5S15 16 15 19v1H2v-1Zm14.5 1v-1c0-1.9-.8-3.6-2.1-4.8.4-.1.7-.1 1.1-.1 3 0 5.5 2.1 5.5 4.9v1h-4.5Z"/></svg>
+          Use saved faces
+        </button>
+      </div>
+    </div>
+
+    <div class="stage">
+      <!-- Live camera -->
+      <section class="view" id="view-live">
+        <video id="video" autoplay playsinline muted></video>
+        <div class="guides" aria-hidden="true"><span></span><span></span></div>
+        <div class="chip" id="hint">Stand side by side.<br>Make sure your faces are clearly shown.</div>
+        <div class="countdown" id="countdown"></div>
+      </section>
+
+      <!-- Saved face pairs -->
+      <section class="view hidden" id="view-saved">
+        <div class="saved-wrap">
+          <h2>Pick a saved pair</h2>
+          <div class="saved-grid" id="saved-grid"></div>
+          <p class="empty hidden" id="saved-empty">No saved faces yet. Take a photo first.</p>
+        </div>
+      </section>
+
+      <!-- Check the captured faces -->
+      <section class="view hidden" id="view-check">
+        <img class="backdrop" id="captured-check" alt="">
+        <div class="confirm">
+          <h2>Confirm your faces are captured correctly</h2>
+          <div class="faces">
+            <figure><img id="check-a" alt="Person A"></figure>
+            <span class="plus">+</span>
+            <figure><img id="check-b" alt="Person B"></figure>
+          </div>
+        </div>
+      </section>
+
+      <!-- Names and gender -->
+      <section class="view hidden" id="view-confirm">
+        <form class="confirm" id="details-form" autocomplete="off">
+          <h2>Tell us about your family</h2>
+          <div class="faces">
+            <figure>
+              <img id="face-a" alt="Person A">
+              <input class="field" id="name-a" maxlength="40" placeholder="Person A's name" aria-label="Person A's name">
+            </figure>
+            <span class="plus">+</span>
+            <figure>
+              <img id="face-b" alt="Person B">
+              <input class="field" id="name-b" maxlength="40" placeholder="Person B's name" aria-label="Person B's name">
+            </figure>
+          </div>
+          <p class="section-label">Your baby</p>
+          <div class="child-details">
+            <input class="field" id="name-child" maxlength="40" placeholder="Name your child" aria-label="Child's name">
+            <div class="choice" role="radiogroup" aria-label="Child's gender">
+              <div class="choice-options">
+                <label><input type="radio" name="gender" value="girl"><span>Girl</span></label>
+                <label><input type="radio" name="gender" value="any"><span>Either</span></label>
+                <label><input type="radio" name="gender" value="boy"><span>Boy</span></label>
+              </div>
+              <span class="track" aria-hidden="true"><span class="knob"></span></span>
+            </div>
+            <button type="button" class="surprise" id="btn-surprise">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l1.9 5.6L19.5 9.5l-5.6 1.9L12 17l-1.9-5.6L4.5 9.5l5.6-1.9L12 2Zm7 11 .9 2.6 2.6.9-2.6.9L19 20l-.9-2.6-2.6-.9 2.6-.9L19 13ZM5 15l.7 1.8 1.8.7-1.8.7L5 20l-.7-1.8-1.8-.7 1.8-.7L5 15Z"/></svg>
+              Surprise me
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Baby portrait -->
+      <section class="view hidden" id="view-baby">
+        <div class="result">
+          <div class="child">
+            <h2 class="baby-title" id="baby-title"></h2>
+            <div class="child-frame">
+              <img id="baby-img" alt="Your baby">
+              <div class="generating hidden" id="baby-generating">
+                <p id="baby-generating-text"></p>
+                <div class="progress" id="baby-progress"><span></span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Baby monitor: simulated sensor readings for a minute -->
+      <section class="view hidden" id="view-sensors">
+        <div class="sensors-wrap">
+          <div class="sensors-head">
+            <h2 id="sensors-title">Baby monitor</h2>
+            <div class="sensor-timer" id="sensor-timer">1:00</div>
+          </div>
+          <div class="sensor-grid">
+            <div class="sensor-panel" id="panel-temp">
+              <div class="sensor-top"><span class="sensor-label">Temperature</span><span class="sensor-value" id="temp-value"></span></div>
+              <canvas class="sensor-chart" id="temp-chart"></canvas>
+            </div>
+            <div class="sensor-panel" id="panel-motion">
+              <div class="sensor-top"><span class="sensor-label">Motion</span><span class="sensor-value" id="motion-value"></span></div>
+              <canvas class="sensor-chart" id="motion-chart"></canvas>
+            </div>
+          </div>
+          <div class="situation">
+            <p class="situation-label">Parenting challenge</p>
+            <p class="situation-text" id="situation-text"></p>
+            <textarea class="situation-reply" id="situation-reply" rows="2" placeholder="Type how you'd respond, then press Enter…" aria-label="Your response"></textarea>
+          </div>
+          <p class="sensor-hint" id="sensor-hint"></p>
+        </div>
+      </section>
+
+      <!-- Good or bad path for each age -->
+      <section class="view hidden" id="view-choices">
+        <div class="choices-wrap">
+          <h2 id="choices-title">Developer mode selection of lifepath</h2>
+          <div class="choices-grid" id="choices-grid"></div>
+        </div>
+      </section>
+
+      <!-- Results by age -->
+      <section class="view hidden" id="view-result">
+        <div class="result">
+          <div class="child">
+            <div class="child-frame">
+              <img id="child-img" alt="Generated child">
+              <div class="generating hidden" id="generating">
+                <p id="generating-text"></p>
+                <div class="progress" id="progress"><span></span></div>
+              </div>
+            </div>
+            <p class="caption" id="caption"><span id="caption-text"></span></p>
+            <ol class="timeline" id="timeline"></ol>
+          </div>
+        </div>
+      </section>
+
+      <div class="busy hidden" id="busy"><p id="busy-text"></p><div class="progress" id="busy-progress"><span></span></div></div>
+      <div class="toast hidden" id="toast" role="alert"></div>
+      <div class="flash" id="flash"></div>
+    </div>
+
+    <div class="actions">
+      <div class="buttons">
+        <button class="btn ghost hidden" id="btn-back"></button>
+        <button class="btn ghost hidden" id="btn-restart">Start over</button>
+        <button class="btn primary hidden" id="btn-next">Next age →</button>
+        <button class="btn primary hidden" id="btn-shutter">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4.5 7.6 6.5H5A2.5 2.5 0 0 0 2.5 9v8.5A2.5 2.5 0 0 0 5 20h14a2.5 2.5 0 0 0 2.5-2.5V9A2.5 2.5 0 0 0 19 6.5h-2.6L15 4.5H9Zm3 4a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9Z"/></svg>
+          Take photo <kbd>Space</kbd>
+        </button>
+        <button class="btn primary hidden" id="btn-faces-ok">Looks good →</button>
+        <button class="btn ghost hidden" id="btn-details-back">Back</button>
+        <button class="btn primary hidden" id="btn-confirm">Generate your baby →</button>
+        <button class="btn ghost hidden" id="btn-rebaby">Try another baby</button>
+        <button class="btn primary hidden" id="btn-monitor">Monitor your baby →</button>
+        <button class="btn primary hidden" id="btn-grow">Grow up →</button>
+      </div>
+    </div>
+  </main>
+
+
+  <canvas id="canvas" hidden></canvas>
+  <script src="/static/app.js"></script>
+</body>
+</html>

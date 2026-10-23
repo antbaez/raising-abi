@@ -1,0 +1,23 @@
+{
+  "1": [
+    "It's 3 a.m. and {child} has been crying for an hour. Nothing you try is working, and you both have work in the morning. What do you do?",
+    "{child} has a fever of 38.5°C and won't stop fussing. The doctor's office is closed until Monday. What do you do?",
+    "{child} keeps pulling things off the shelves and just broke a glass. They're laughing and reaching for the next one. How do you respond?",
+    "A relative insists {child} should be left to cry it out at bedtime. You're not sure you agree. How do you handle it?",
+    "{child} refuses every food except crackers and has barely eaten in two days. What do you do?"
+  ],
+  "12": [
+    "{child} comes home with a black eye and won't say what happened. What do you do?",
+    "You find out {child} has been secretly using a social media app you said no to, and talking to people they don't know. How do you respond?",
+    "{child}'s teacher calls: {child} copied a classmate's homework for weeks. How do you handle it?",
+    "{child} says they hate their body and has started skipping lunch at school. What do you do?",
+    "{child} begs to quit the sport they've played for six years, two weeks before the championship. How do you respond?"
+  ],
+  "18": [
+    "{child} announces they're skipping college to move across the country with a partner you've never met. How do you respond?",
+    "You find a bottle of vodka in {child}'s car the night before their graduation. What do you do?",
+    "{child} got into their dream school, but it costs far more than you can afford. How do you talk about it?",
+    "{child} tells you they've been feeling hopeless for months and didn't want to worry you. What do you do?",
+    "{child} crashed the family car after staying out past curfew. No one is hurt. How do you handle it?"
+  ]
+}

@@ -1,0 +1,7 @@
+mediapipe
+google-genai
+runwayml
+python-dotenv
+pillow
+numpy
+flask
