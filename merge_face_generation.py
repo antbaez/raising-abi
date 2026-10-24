@@ -63,7 +63,7 @@ BABY_PROMPT = (
 )
 # Child of the two faces at a given age. Optionally, an image of the same child
 # at an earlier age can be passed as a third reference for consistency.
-CHILD_AGES = (1, 5, 12, 15, 18, 21)
+CHILD_AGES = (1, 4, 8, 12, 16, 18)
 CHILD_PROMPT = (
     "Here are two adult faces: {a}{name_a} and {b}{name_b}. "
     "Merge them into one face to create their child: {age_desc}{child_name}."
@@ -82,7 +82,7 @@ BABY_PORTRAIT_PROMPT = (
 PORTRAIT_PROMPT = " Generate a close-up portrait of the child's face."
 # With a caption: the child in that moment. Ages in AGES_WITH_PARENTS also show
 # both parents; the other ages show the child alone.
-AGES_WITH_PARENTS = (1, 5)
+AGES_WITH_PARENTS = (1, 4)
 SCENE_CHILD_ONLY_PROMPT = (
     " Show only the child, with no other people in the image, in this moment: {caption}"
 )

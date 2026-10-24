@@ -1,5 +1,5 @@
 // Flow: (take photo | pick saved faces) -> check faces -> names + gender -> baby portrait
-// -> then for each pair of ages: a minute of (simulated) baby monitor readings, with a
+// -> then for each pair of ages: a minute of baby monitor readings (live from the Arduino toy), with a
 // parenting challenge to answer, picks a good or bad path -> caption + image for both ages.
 
 const $ = (id) => document.getElementById(id);
@@ -15,6 +15,7 @@ const views = {
   sensors: $("view-sensors"),
   choices: $("view-choices"),
   result: $("view-result"),
+  keepsake: $("view-keepsake"),
 };
 const btn = {
   shutter: $("btn-shutter"),
@@ -27,6 +28,7 @@ const btn = {
   grow: $("btn-grow"),
   restart: $("btn-restart"),
   next: $("btn-next"),
+  keepsake: $("btn-keepsake"),
 };
 const tabs = { camera: $("tab-camera"), saved: $("tab-saved") };
 
@@ -45,7 +47,7 @@ const state = {
   view: "live",
   step: 1,          // 1 capture, 2 confirm, 3 meet baby, 4 choose path, 5 grow up
   session: null,    // { id, photo, faces: [a, b], details }
-  ages: [1, 5, 12, 15, 18, 21],
+  ages: [1, 4, 8, 12, 16, 18],
   details: { names: { a: "", b: "", child: "" }, gender: "any" },
   baby: { run: null, key: null, url: null, status: null }, // baby portrait
   monitors: null,   // { baby, stages: { stage -> { level, samples, polls, start, done, outcome, situation, reply } } }
@@ -429,22 +431,37 @@ function renderBaby() {
   btn.rebaby.disabled = status === "loading";
 }
 
-// --- Baby monitor: simulated sensors ----------------------------------------
+// --- Baby monitor ------------------------------------------------------------
 
 // Before each pair of ages the parents watch the baby monitor for a minute.
-// For now both sensors follow one level that the up / down arrow keys move.
-// Every second the level is polled: above the axis (the middle of the chart)
-// counts as good, below as bad. If good seconds >= bad seconds, the path for
+// Normal mode shows the Arduino toy's live readings (ABI_Face_Feedback.ino),
+// streamed from /api/arduino. The toy decides, with its own thresholds and
+// hysteresis, whether each one is good: the IR temperature between COLD_ON_C
+// and HOT_ON_C (temp_ok), and the motion a gentle rock, neither still nor
+// shaken hard (rocked). Developer mode instead moves both readings with the up
+// / down arrow keys, good above the middle of the chart.
+// The baby is happy while both readings are good and crying otherwise. Every
+// second the baby is polled; if happy seconds >= crying seconds, the path for
 // that pair of ages is good.
 const SENSOR_SECONDS = 60;
 const SENSOR_WINDOW_SECONDS = 20; // how much history each chart shows
-const SENSOR_RATE = 0.5;          // level change per second while a key is held
+const SENSOR_RATE = 0.5;          // developer mode: level change per second while a key is held
+const SENSOR_STALE_MS = 1000;     // a live reading older than this counts as missing
 const SENSOR_GOOD = "#4ade80";
 const SENSOR_BAD = "#f87171";
-const SENSORS = {
-  temp: { range: [35.5, 39.5], format: (v) => `${v.toFixed(1)}°C` },
-  motion: { range: [0, 100], format: (v) => `${Math.round(v)}%` },
-};
+// Chart ranges. `lines` are drawn for reference: in normal mode the sketch's
+// COLD_ON_C / HOT_ON_C and HAPPY_ACCEL_ON / CRY_ACCEL. The motion chart plots
+// the toy's dyn (acceleration beyond gravity); a gentle spin counts as rocking
+// too, so its color can be green below the line.
+const SENSORS = DEV_MODE
+  ? {
+      temp: { range: [35.5, 39.5], lines: [37.5], format: (v) => `${v.toFixed(1)}°C` },
+      motion: { range: [0, 100], lines: [50], format: (v) => `${Math.round(v)}%` },
+    }
+  : {
+      temp: { range: [10, 42], lines: [18, 34], format: (v) => `${v.toFixed(1)}°C` },
+      motion: { range: [0, 8], lines: [1.2, 5], format: (v) => `${v.toFixed(1)} m/s²` },
+    };
 const sensorKeys = { up: false, down: false };
 let sensorFrame = null;
 
@@ -452,7 +469,60 @@ const sensorValue = (name, level) => {
   const [lo, hi] = SENSORS[name].range;
   return lo + level * (hi - lo);
 };
-const sensorAxis = (name) => sensorValue(name, 0.5);
+
+// The latest message from the toy; the page listens for the whole visit.
+const arduino = { connected: false, reading: null, at: 0 };
+if (!DEV_MODE) {
+  const source = new EventSource("/api/arduino");
+  source.onmessage = (e) => {
+    const message = JSON.parse(e.data);
+    arduino.connected = message.connected;
+    if (message.reading) {
+      arduino.reading = message.reading;
+      arduino.at = performance.now();
+    }
+  };
+  source.onerror = () => (arduino.connected = false); // EventSource reconnects by itself
+}
+
+// A reading is { temp, motion, tempOk, motionOk }, or null when the toy isn't sending.
+function liveReading(now) {
+  const r = arduino.reading;
+  if (!arduino.connected || !r || now - arduino.at > SENSOR_STALE_MS) return null;
+  return { temp: r.obj, motion: r.dyn, tempOk: r.temp_ok, motionOk: r.rocked };
+}
+const devReading = (level) => ({
+  temp: sensorValue("temp", level), motion: sensorValue("motion", level),
+  tempOk: level >= 0.5, motionOk: level >= 0.5,
+});
+const currentReading = (m, now) => (DEV_MODE ? devReading(m.level) : liveReading(now));
+const isHappy = (reading) => Boolean(reading?.tempOk && reading?.motionOk);
+
+// While the minute runs, every SOUND_EVERY_MS the baby plays the first
+// SOUND_CLIP_MS of a laugh if happy right then, or of a cry otherwise.
+const SOUND_EVERY_MS = 10000;
+const SOUND_CLIP_MS = 3000;
+const sounds = {
+  happy: new Audio("/static/sounds/baby-laughing.mp3"),
+  crying: new Audio("/static/sounds/baby-crying.mp3"),
+};
+let soundStop;
+
+function stopSounds() {
+  clearTimeout(soundStop);
+  for (const sound of Object.values(sounds)) sound.pause();
+}
+
+function playMoodSound(m, now) {
+  if (m.start === null || m.done) return;
+  if (m.soundAt !== undefined && now - m.soundAt < SOUND_EVERY_MS) return;
+  m.soundAt = now;
+  stopSounds();
+  const sound = sounds[isHappy(currentReading(m, now)) ? "happy" : "crying"];
+  sound.currentTime = 0;
+  sound.play().catch(() => {}); // the browser blocks sound until the page has been clicked
+  soundStop = setTimeout(stopSounds, SOUND_CLIP_MS);
+}
 
 // Sets up a run of age images, if there isn't one yet.
 function ensureRun() {
@@ -482,9 +552,10 @@ function showSensors(stage = 0) {
   cancelAnimationFrame(sensorFrame);
   let last = performance.now();
   const tick = (now) => {
-    if (state.view !== "sensors") return; // stops when leaving the page
+    if (state.view !== "sensors") return stopSounds(); // stops when leaving the page
     stepSensors(now, (now - last) / 1000);
     last = now;
+    playMoodSound(monitor(), now);
     renderSensors(now);
     sensorFrame = requestAnimationFrame(tick);
   };
@@ -528,18 +599,20 @@ function stepSensors(now, dt) {
   if (m.done) return;
   const dir = (sensorKeys.up ? 1 : 0) - (sensorKeys.down ? 1 : 0);
   if (m.start === null) {
-    if (!dir) return; // the minute starts with the first key press
+    // The minute starts with the first key press, or in normal mode the first live reading.
+    if (DEV_MODE ? !dir : !liveReading(now)) return;
     m.start = now;
   }
   m.level = Math.min(1, Math.max(0, m.level + dir * SENSOR_RATE * dt));
   const t = Math.min(SENSOR_SECONDS, (now - m.start) / 1000);
-  m.samples.push({ t, level: m.level });
-  // Poll once per elapsed second.
-  while (m.polls.length < Math.floor(t)) m.polls.push(m.level >= 0.5);
+  const reading = currentReading(m, now);
+  m.samples.push({ t, ...reading });
+  // Poll once per elapsed second; a missing reading counts as crying.
+  while (m.polls.length < Math.floor(t)) m.polls.push(isHappy(reading));
   if (t >= SENSOR_SECONDS) finishMonitor(m);
 }
 
-// Seconds above the axis, after the response bonus.
+// Happy seconds, after the response bonus.
 const JUDGE_BONUS_SECONDS = 10;
 const goodSeconds = (m) => m.polls.filter(Boolean).length + (m.bonus || 0);
 const badSeconds = (m) => m.polls.filter((p) => !p).length;
@@ -594,7 +667,7 @@ function renderSensors(now) {
   timer.textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}`;
   timer.classList.toggle("done", m.done);
 
-  const tally = `${goodSeconds(m)}s good · ${badSeconds(m)}s bad`;
+  const tally = `${goodSeconds(m)}s happy · ${badSeconds(m)}s crying`;
   const bonus = m.verdict
     ? ` (${m.verdict === "good" ? "+" : "−"}${JUDGE_BONUS_SECONDS}s for a ${m.verdict} response)`
     : m.submitted ? "" : " (no response submitted)";
@@ -603,23 +676,41 @@ function renderSensors(now) {
     ? "Judging your response…"
     : m.outcome
       ? `${m.outcome === "good" ? "Good" : "Bad"} parenting: ${tally}${bonus}`
-      : m.start === null ? "Hold ↑ or ↓ to start the monitor" : `Hold ↑ or ↓ to change the readings · ${tally}`;
+      : sensorPrompt(m, now, tally);
   hint.className = `sensor-hint${m.outcome ? ` result ${m.outcome}` : ""}`;
   // Developer mode can press Grow up early to end the minute.
   btn.grow.disabled = m.judging || (!m.outcome && !DEV_MODE);
 
+  // A finished minute keeps showing its last reading.
+  const reading = m.done ? m.samples[m.samples.length - 1] : currentReading(m, now);
   for (const name of Object.keys(SENSORS)) {
+    const v = reading?.[name];
+    const ok = reading?.[`${name}Ok`];
     const value = $(`${name}-value`);
-    value.textContent = SENSORS[name].format(sensorValue(name, m.level));
-    value.style.color = m.level >= 0.5 ? SENSOR_GOOD : SENSOR_BAD;
+    value.textContent = v == null ? "—" : SENSORS[name].format(v);
+    value.style.color = reading ? (ok ? SENSOR_GOOD : SENSOR_BAD) : "";
+    $(`panel-${name}`).classList.toggle("good", Boolean(reading) && ok);
+    $(`panel-${name}`).classList.toggle("bad", Boolean(reading) && !ok);
     drawSensorChart($(`${name}-chart`), name, m.samples, t);
   }
+  const mood = $("sensor-mood");
+  mood.textContent = !reading ? "No signal" : isHappy(reading) ? "😊 Happy" : "😢 Crying";
+  mood.className = `sensor-mood${reading ? (isHappy(reading) ? " good" : " bad") : ""}`;
 }
 
-// Newest reading at the right edge; older ones scroll off to the left. The
-// line is green above the axis and red below it.
+function sensorPrompt(m, now, tally) {
+  if (DEV_MODE) return m.start === null ? "Hold ↑ or ↓ to start the monitor" : `Hold ↑ or ↓ to change the readings · ${tally}`;
+  if (!liveReading(now)) {
+    const problem = arduino.connected ? "Waiting for the baby monitor…" : "Baby monitor not connected: plug in the toy";
+    return m.start === null ? problem : `${problem} (counts as crying) · ${tally}`;
+  }
+  return `Rock the baby gently and keep them at a comfortable temperature · ${tally}`;
+}
+
+// Newest reading at the right edge; older ones scroll off to the left. Each
+// stretch of line is green while that reading is good and red while it isn't.
 function drawSensorChart(canvas, name, samples, now) {
-  const { range, format } = SENSORS[name];
+  const { range, lines, format } = SENSORS[name];
   const dpr = window.devicePixelRatio || 1;
   const w = canvas.clientWidth;
   const h = canvas.clientHeight;
@@ -632,66 +723,78 @@ function drawSensorChart(canvas, name, samples, now) {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, w, h);
 
-  const pad = { top: 12, bottom: 12, left: 56, right: 14 };
+  const pad = { top: 12, bottom: 12, left: 64, right: 14 };
   const plotW = w - pad.left - pad.right;
   const plotH = h - pad.top - pad.bottom;
+  const bottom = pad.top + plotH;
   const x = (t) => pad.left + plotW - ((now - t) / SENSOR_WINDOW_SECONDS) * plotW;
-  const y = (v) => pad.top + plotH - ((v - range[0]) / (range[1] - range[0])) * plotH;
-  const axisY = y(sensorAxis(name));
-
-  // Grid and value labels; the middle line is the axis.
-  ctx.font = "12px Inter, sans-serif";
-  ctx.textAlign = "right";
-  ctx.textBaseline = "middle";
-  for (let i = 0; i <= 4; i++) {
-    const v = range[0] + (i / 4) * (range[1] - range[0]);
-    ctx.strokeStyle = i === 2 ? "rgba(255, 255, 255, .35)" : "rgba(255, 255, 255, .07)";
-    ctx.lineWidth = i === 2 ? 1.5 : 1;
+  const clamped = (v) => Math.min(range[1], Math.max(range[0], v));
+  const y = (v) => bottom - ((clamped(v) - range[0]) / (range[1] - range[0])) * plotH;
+  const hline = (v) => {
     ctx.beginPath();
     ctx.moveTo(pad.left, y(v));
     ctx.lineTo(w - pad.right, y(v));
     ctx.stroke();
+  };
+
+  // Grid and value labels, then the threshold lines.
+  ctx.font = "12px Inter, sans-serif";
+  ctx.textAlign = "right";
+  ctx.textBaseline = "middle";
+  ctx.strokeStyle = "rgba(255, 255, 255, .07)";
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const v = range[0] + (i / 4) * (range[1] - range[0]);
+    hline(v);
     ctx.fillStyle = "rgba(255, 255, 255, .4)";
     ctx.fillText(format(v), pad.left - 10, y(v));
   }
+  ctx.strokeStyle = "rgba(255, 255, 255, .35)";
+  ctx.lineWidth = 1.5;
+  for (const v of lines) hline(v);
 
   const visible = samples.filter((p) => p.t >= now - SENSOR_WINDOW_SECONDS - 1);
-  const value = (p) => sensorValue(name, p.level);
-  if (visible.length > 1) {
-    const line = new Path2D();
-    visible.forEach((p, i) => (i ? line.lineTo(x(p.t), y(value(p))) : line.moveTo(x(p.t), y(value(p)))));
-    const area = new Path2D(line);
-    area.lineTo(x(visible[visible.length - 1].t), axisY);
-    area.lineTo(x(visible[0].t), axisY);
+  const paths = { [SENSOR_GOOD]: [new Path2D(), new Path2D()], [SENSOR_BAD]: [new Path2D(), new Path2D()] };
+  for (let i = 1; i < visible.length; i++) {
+    const a = visible[i - 1];
+    const b = visible[i];
+    if (a[name] == null || b[name] == null) continue; // a gap while the toy wasn't sending
+    const [line, area] = paths[b[`${name}Ok`] ? SENSOR_GOOD : SENSOR_BAD];
+    const [x0, y0, x1, y1] = [x(a.t), y(a[name]), x(b.t), y(b[name])];
+    line.moveTo(x0, y0);
+    line.lineTo(x1, y1);
+    area.moveTo(x0, bottom);
+    area.lineTo(x0, y0);
+    area.lineTo(x1, y1);
+    area.lineTo(x1, bottom);
     area.closePath();
-    // Draw everything twice: once clipped above the axis in green, once below in red.
-    for (const [top, bottom, color] of [[0, axisY, SENSOR_GOOD], [axisY, h, SENSOR_BAD]]) {
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(pad.left, top, plotW, bottom - top);
-      ctx.clip();
-      ctx.globalAlpha = 0.15;
-      ctx.fillStyle = color;
-      ctx.fill(area);
-      ctx.globalAlpha = 1;
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 2.5;
-      ctx.lineJoin = "round";
-      ctx.stroke(line);
-      ctx.restore();
-    }
   }
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(pad.left, 0, plotW, h);
+  ctx.clip();
+  for (const [color, [line, area]] of Object.entries(paths)) {
+    ctx.globalAlpha = 0.15;
+    ctx.fillStyle = color;
+    ctx.fill(area);
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = "round";
+    ctx.stroke(line);
+  }
+  ctx.restore();
   const last = visible[visible.length - 1];
-  if (last) {
+  if (last?.[name] != null) {
     ctx.beginPath();
-    ctx.arc(x(last.t), y(value(last)), 5, 0, Math.PI * 2);
-    ctx.fillStyle = last.level >= 0.5 ? SENSOR_GOOD : SENSOR_BAD;
+    ctx.arc(x(last.t), y(last[name]), 5, 0, Math.PI * 2);
+    ctx.fillStyle = last[`${name}Ok`] ? SENSOR_GOOD : SENSOR_BAD;
     ctx.fill();
   }
 }
 
 document.addEventListener("keydown", (e) => {
-  if (state.view !== "sensors" || (e.key !== "ArrowUp" && e.key !== "ArrowDown")) return;
+  if (!DEV_MODE || state.view !== "sensors" || (e.key !== "ArrowUp" && e.key !== "ArrowDown")) return;
   e.preventDefault();
   sensorKeys[e.key === "ArrowUp" ? "up" : "down"] = true;
 });
@@ -777,7 +880,7 @@ function startGrowing() {
 }
 
 function showResult() {
-  show("result", { step: 5, buttons: ["restart", "next"] });
+  show("result", { step: 5, buttons: ["restart", "next", "keepsake"] });
   renderResult();
 }
 
@@ -827,6 +930,42 @@ function nextAge() {
   if (needsPick()) return showSensors(stageOf(state.shown + 1));
   state.reached = Math.max(state.reached, state.shown + 1);
   displayAge(state.shown + 1);
+}
+
+// --- Keepsake ----------------------------------------------------------------
+
+// Everything in one image: the two faces, the baby, and every age with its
+// caption. Phones on the same Wi-Fi save it by scanning the QR code. It's made
+// once per set of images; picking a different path makes a new one.
+async function showKeepsake() {
+  show("keepsake", { step: 5, buttons: ["restart"] });
+  const key = JSON.stringify([state.run, state.ages.map((a) => state.results[a]?.url)]);
+  if (state.keepsake?.key !== key) {
+    for (const id of ["keepsake-img", "keepsake-qr"]) setImage($(id), null);
+    $("keepsake-link").textContent = "";
+    $("keepsake-download").classList.add("hidden");
+    busy("Putting your keepsake together…");
+    try {
+      const data = await api("/api/keepsake", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: state.session?.id, run: state.run, baby_run: state.baby.run, names: state.details.names }),
+      });
+      state.keepsake = { key, ...data };
+    } catch (e) {
+      toast(e.message);
+      return;
+    } finally {
+      busy(null);
+    }
+  }
+  if (state.view !== "keepsake") return;
+  const { url, qr, share } = state.keepsake;
+  setImage($("keepsake-img"), url);
+  setImage($("keepsake-qr"), qr);
+  $("keepsake-link").textContent = share;
+  $("keepsake-download").href = url;
+  $("keepsake-download").classList.remove("hidden");
 }
 
 // Each age's story intro plays once per run.
@@ -888,6 +1027,9 @@ function endIntro() {
 function renderResult() {
   btn.next.classList.toggle("hidden", state.shown >= state.ages.length - 1);
   btn.next.textContent = needsPick() ? "Monitor your child →" : "Next age →";
+  // The keepsake is offered on the last age once every image is ready.
+  const allDone = state.ages.every((a) => state.status[a] === "done");
+  btn.keepsake.classList.toggle("hidden", state.shown < state.ages.length - 1 || !allDone);
   const age = state.ages[state.shown];
   const status = state.status[age];
   const result = state.results[age];
@@ -996,6 +1138,7 @@ function devPages() {
         showResult();
       },
     })),
+    { label: "Keepsake", view: "keepsake", needs: true, go: showKeepsake },
   ];
 }
 
@@ -1093,6 +1236,7 @@ btn.monitor.addEventListener("click", () => showSensors(0));
 btn.grow.addEventListener("click", startGrowing);
 btn.restart.addEventListener("click", restart);
 btn.next.addEventListener("click", nextAge);
+btn.keepsake.addEventListener("click", showKeepsake);
 $("details-form").addEventListener("submit", (e) => {
   e.preventDefault();
   confirmDetails();

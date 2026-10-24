@@ -109,11 +109,12 @@
         </div>
       </section>
 
-      <!-- Baby monitor: simulated sensor readings for a minute -->
+      <!-- Baby monitor: a minute of live readings from the Arduino toy -->
       <section class="view hidden" id="view-sensors">
         <div class="sensors-wrap">
           <div class="sensors-head">
             <h2 id="sensors-title">Baby monitor</h2>
+            <div class="sensor-mood" id="sensor-mood"></div>
             <div class="sensor-timer" id="sensor-timer">1:00</div>
           </div>
           <div class="sensor-grid">
@@ -160,6 +161,20 @@
         </div>
       </section>
 
+      <!-- The keepsake: everything in one image, with a QR code for phones -->
+      <section class="view hidden" id="view-keepsake">
+        <div class="keepsake">
+          <img class="keepsake-img" id="keepsake-img" alt="Your keepsake">
+          <div class="keepsake-share">
+            <h2>Take it home</h2>
+            <img class="keepsake-qr" id="keepsake-qr" alt="QR code for your keepsake">
+            <p class="keepsake-note">Scan with your phone's camera to save the image. Your phone needs to be on the same Wi-Fi as this computer.</p>
+            <a class="btn ghost hidden" id="keepsake-download" download="raising-abi.png">Download here</a>
+            <p class="keepsake-link" id="keepsake-link"></p>
+          </div>
+        </div>
+      </section>
+
       <div class="busy hidden" id="busy"><p id="busy-text"></p><div class="progress" id="busy-progress"><span></span></div></div>
       <div class="toast hidden" id="toast" role="alert"></div>
       <div class="flash" id="flash"></div>
@@ -170,6 +185,7 @@
         <button class="btn ghost hidden" id="btn-back"></button>
         <button class="btn ghost hidden" id="btn-restart">Start over</button>
         <button class="btn primary hidden" id="btn-next">Next age →</button>
+        <button class="btn primary hidden" id="btn-keepsake">Get your keepsake →</button>
         <button class="btn primary hidden" id="btn-shutter">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4.5 7.6 6.5H5A2.5 2.5 0 0 0 2.5 9v8.5A2.5 2.5 0 0 0 5 20h14a2.5 2.5 0 0 0 2.5-2.5V9A2.5 2.5 0 0 0 19 6.5h-2.6L15 4.5H9Zm3 4a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9Z"/></svg>
           Take photo <kbd>Space</kbd>

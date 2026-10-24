@@ -5,3 +5,5 @@ python-dotenv
 pillow
 numpy
 flask
+pyserial
+qrcode

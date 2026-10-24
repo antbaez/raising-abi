@@ -6,30 +6,43 @@ their baby, then lets them pick a good or bad path for each age. For every age
 in merge_face_generation.CHILD_AGES (in parallel) it picks a caption from
 captions.json and generates the child's image from it, using the baby portrait
 as a reference so it stays the same child. "Surprise me" asks Gemini 3.8 Flash
-for a name.
+for a name. The baby monitor's readings come from the Arduino toy over USB
+serial (ABI_Face_Feedback.ino), streamed to the page from /api/arduino. At
+the end, everything is combined into one keepsake image that phones on the same
+Wi-Fi can save by scanning a QR code; phones can open only those keepsake pages.
 
 Usage:
     python app.py            # then open http://localhost:5050
 """
 
+import base64
 import io
 import json
+import os
+import queue
 import random
 import re
+import secrets
+import socket
 import threading
 import time
 from pathlib import Path
 
+import serial
 from flask import Flask, abort, jsonify, request, send_from_directory
 from PIL import Image
+from serial.tools import list_ports
 
+import keepsake
 import merge_face_generation as mfg
 
 ROOT = Path(__file__).parent
 PHOTOS_DIR = mfg.PHOTOS_DIR
 FACES_DIR = ROOT / "segmented_faces"
 OUTPUTS_DIR = ROOT / "outputs"
+KEEPSAKES_DIR = OUTPUTS_DIR / "keepsakes"
 SERVED_DIRS = {"photos": PHOTOS_DIR, "faces": FACES_DIR, "outputs": OUTPUTS_DIR}
+PORT = 5050
 
 MODEL = "gemini"
 SESSION_ID_RE = re.compile(r"booth_\d{8}_\d{6}_\d{3}")
@@ -37,6 +50,18 @@ RUN_ID_RE = re.compile(r"\d{6,20}")
 NAME_MAX_LEN = 40
 
 app = Flask(__name__, static_folder="static", static_url_path="/static")
+
+LOCAL_ADDRESSES = {"127.0.0.1", "::1"}
+KEEPSAKE_TOKEN_RE = re.compile(r"[A-Za-z0-9_-]{16}")
+
+
+@app.before_request
+def local_only():
+    """The app listens on the network so phones can fetch their keepsake, but
+    everything except the keepsake pages (/k/...) stays on this computer:
+    other devices can't see or delete anyone's photos."""
+    if request.remote_addr not in LOCAL_ADDRESSES and not request.path.startswith("/k/"):
+        abort(403)
 
 
 def _face_paths(session_id: str) -> list[Path]:
@@ -336,5 +361,189 @@ def generate():
     return jsonify(age=age, choice=choice, caption=caption, url=f"/files/outputs/{path.name}")
 
 
+# --- Keepsake ----------------------------------------------------------------
+
+
+def _lan_address() -> str:
+    """This computer's address on the local network, for the phone link.
+    KEEPSAKE_HOST overrides it."""
+    if os.environ.get("KEEPSAKE_HOST"):
+        return os.environ["KEEPSAKE_HOST"]
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+        try:
+            s.connect(("8.8.8.8", 80))  # picks the outgoing interface; sends nothing
+            return s.getsockname()[0]
+        except OSError:
+            return "127.0.0.1"
+
+
+@app.post("/api/keepsake")
+def make_keepsake():
+    """Combine the segmented faces, the baby portrait and every age's image and
+    caption into one image, saved under a random token so only the QR code's
+    link finds it.
+
+    Body: {"id": session id, "run": run id, "baby_run": run id of the baby
+           portrait, "names": {"a", "b", "child"}}.
+    Returns {"url": the image, "share": the link for phones, "qr": a data: URL
+    of the QR code for "share"}.
+    """
+    body = request.get_json(silent=True) or {}
+    checked = _session_faces(body)
+    if not isinstance(checked[0], str):
+        return checked
+    session_id, run_id, faces = checked
+    baby_run = str(body.get("baby_run", ""))
+    baby_path = _baby_path(session_id, baby_run) if RUN_ID_RE.fullmatch(baby_run) else None
+    if not baby_path or not baby_path.is_file():
+        return jsonify(error="The baby portrait isn't ready"), 409
+    ages = []
+    for age in mfg.CHILD_AGES:
+        path = _output_path(session_id, run_id, age)
+        if not path.is_file() or not path.with_suffix(".json").is_file():
+            return jsonify(error=f"Age {age} isn't ready yet"), 409
+        info = json.loads(path.with_suffix(".json").read_text())
+        ages.append({**info, "image": Image.open(path)})
+
+    names = _parse_details(body)["names"]
+    image = keepsake.build(faces, Image.open(baby_path), ages, (names["a"], names["b"]), names["child"])
+    KEEPSAKES_DIR.mkdir(parents=True, exist_ok=True)
+    token = secrets.token_urlsafe(12)
+    image.save(KEEPSAKES_DIR / f"{token}.png")
+    (KEEPSAKES_DIR / f"{token}.json").write_text(json.dumps({"session": session_id, "run": run_id, "child": names["child"]}))
+    share = f"http://{_lan_address()}:{PORT}/k/{token}"
+    qr = "data:image/png;base64," + base64.b64encode(keepsake.qr_png(share)).decode()
+    return jsonify(url=f"/k/{token}.png", share=share, qr=qr)
+
+
+KEEPSAKE_PAGE = """<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Raising {child}</title>
+<style>
+  body {{ margin: 0; padding: 16px; background: #08080d; color: #f1f5f9;
+         font: 17px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; text-align: center; }}
+  img {{ display: block; width: 100%; max-width: 540px; margin: 0 auto 16px; border-radius: 12px; }}
+  a {{ display: inline-block; padding: 14px 28px; border-radius: 999px; color: #fff; font-weight: 700;
+       text-decoration: none; background: linear-gradient(135deg, #6366f1, #ec4899); }}
+  p {{ color: #a3abbd; max-width: 540px; margin: 16px auto 0; }}
+</style>
+</head>
+<body>
+<img src="/k/{token}.png" alt="Your Raising ABI keepsake">
+<a href="/k/{token}.png" download="{filename}">Save image</a>
+<p>On iPhone, you can also press and hold the image, then tap “Save to Photos”.</p>
+</body>
+</html>
+"""
+
+
+@app.get("/k/<token>")
+def keepsake_page(token: str):
+    """The page a phone opens from the QR code."""
+    if not KEEPSAKE_TOKEN_RE.fullmatch(token) or not (KEEPSAKES_DIR / f"{token}.png").is_file():
+        abort(404)
+    info_path = KEEPSAKES_DIR / f"{token}.json"
+    child = json.loads(info_path.read_text()).get("child", "") if info_path.is_file() else ""
+    child = _clean_name(child)
+    slug = re.sub(r"[^a-z0-9]+", "-", child.lower()).strip("-")
+    return KEEPSAKE_PAGE.format(
+        child=child or "ABI", token=token, filename=f"raising-{slug or 'abi'}.png",
+    )
+
+
+@app.get("/k/<token>.png")
+def keepsake_image(token: str):
+    if not KEEPSAKE_TOKEN_RE.fullmatch(token):
+        abort(404)
+    return send_from_directory(KEEPSAKES_DIR, f"{token}.png")
+
+
+# --- Arduino baby monitor ----------------------------------------------------
+
+# The toy prints a JSON "[DATA] {...}" line every 100ms. A background thread
+# reads them and hands each one to every open /api/arduino stream. Set
+# ARDUINO_PORT to pick the serial port; otherwise the first USB serial device
+# is used. Only one program can hold the port, so close the Arduino IDE's
+# Serial Monitor while the app runs.
+ARDUINO_BAUD = 115200
+ARDUINO_RETRY_SECONDS = 2
+ARDUINO_LISTENERS: list[queue.Queue] = []
+ARDUINO_LISTENERS_LOCK = threading.Lock()
+arduino_status = {"connected": False}
+
+
+def _arduino_port() -> str | None:
+    if os.environ.get("ARDUINO_PORT"):
+        return os.environ["ARDUINO_PORT"]
+    ports = [p.device for p in list_ports.comports() if "usbmodem" in p.device or "usbserial" in p.device]
+    return ports[0] if ports else None
+
+
+def _arduino_publish(message: dict) -> None:
+    with ARDUINO_LISTENERS_LOCK:
+        listeners = list(ARDUINO_LISTENERS)
+    for q in listeners:
+        q.put(message)
+
+
+def _arduino_set_connected(connected: bool) -> None:
+    if arduino_status["connected"] != connected:
+        arduino_status["connected"] = connected
+        _arduino_publish({"connected": connected})
+
+
+def _read_arduino() -> None:
+    """Read the toy's [DATA] lines forever, reconnecting when it's unplugged."""
+    while True:
+        port = _arduino_port()
+        if port:
+            try:
+                with serial.Serial(port, ARDUINO_BAUD, timeout=1) as conn:
+                    print(f"Arduino connected on {port}")
+                    _arduino_set_connected(True)
+                    while True:
+                        line = conn.readline().decode(errors="ignore").strip()
+                        if not line.startswith("[DATA]"):
+                            continue
+                        try:
+                            reading = json.loads(line.removeprefix("[DATA]"))
+                        except ValueError:
+                            continue  # a line cut off mid-way
+                        _arduino_publish({"connected": True, "reading": reading})
+            except (serial.SerialException, OSError) as e:
+                print(f"Arduino on {port} disconnected: {e}")
+        _arduino_set_connected(False)
+        time.sleep(ARDUINO_RETRY_SECONDS)
+
+
+@app.get("/api/arduino")
+def arduino_stream():
+    """Server-sent events: {"connected": bool, "reading": [DATA] fields} for
+    each line from the toy, plus {"connected": bool} when it (dis)connects."""
+    q = queue.Queue()
+    with ARDUINO_LISTENERS_LOCK:
+        ARDUINO_LISTENERS.append(q)
+
+    def events():
+        try:
+            yield f"data: {json.dumps(arduino_status)}\n\n"
+            while True:
+                try:
+                    yield f"data: {json.dumps(q.get(timeout=5))}\n\n"
+                except queue.Empty:
+                    yield ": ping\n\n"  # notices closed pages so they're dropped
+        finally:
+            with ARDUINO_LISTENERS_LOCK:
+                ARDUINO_LISTENERS.remove(q)
+
+    return app.response_class(events(), mimetype="text/event-stream", headers={"Cache-Control": "no-cache"})
+
+
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5050, threaded=True)
+    threading.Thread(target=_read_arduino, daemon=True).start()
+    # All interfaces, so phones on the same Wi-Fi can open their keepsake;
+    # local_only() keeps every other page to this computer.
+    app.run(host="0.0.0.0", port=PORT, threaded=True)

@@ -628,6 +628,9 @@ kbd {
   letter-spacing: -.02em;
 }
 .sensor-timer.done { color: var(--good); }
+.sensor-mood { margin-left: auto; font-size: clamp(20px, 4cqh, 30px); font-weight: 800; color: var(--muted); }
+.sensor-mood.good { color: var(--good); }
+.sensor-mood.bad { color: var(--danger); }
 .sensor-grid { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: clamp(12px, 2cqw, 24px); }
 .sensor-panel {
   display: flex;
@@ -638,6 +641,9 @@ kbd {
   border-radius: 20px;
   background: var(--surface-2);
 }
+.sensor-panel { transition: border-color .3s, box-shadow .3s; }
+.sensor-panel.good { border-color: var(--good); box-shadow: 0 0 28px color-mix(in srgb, var(--good) 35%, transparent); }
+.sensor-panel.bad { border-color: var(--danger); box-shadow: 0 0 28px color-mix(in srgb, var(--danger) 35%, transparent); }
 .sensor-top { display: flex; align-items: baseline; justify-content: space-between; }
 .sensor-label { color: var(--muted); font-size: 15px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .sensor-value { font-size: clamp(24px, 5cqh, 38px); font-weight: 800; font-variant-numeric: tabular-nums; }
@@ -672,6 +678,31 @@ kbd {
 .sensor-hint.result { font-size: 22px; font-weight: 800; }
 .sensor-hint.good { color: var(--good); }
 .sensor-hint.bad { color: var(--danger); }
+
+/* The keepsake and its QR code, side by side */
+.keepsake {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(20px, 4cqw, 56px);
+  padding: var(--top) 24px var(--bottom);
+}
+.keepsake-img {
+  height: 100%;
+  max-width: 50cqw;
+  object-fit: contain;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+}
+.keepsake-img:not([src]), .keepsake-qr:not([src]) { visibility: hidden; }
+.keepsake-share { display: flex; flex-direction: column; align-items: center; gap: 14px; max-width: 360px; text-align: center; }
+.keepsake-share h2 { margin: 0; font-size: clamp(26px, 5cqh, 44px); }
+.keepsake-qr { width: clamp(160px, 30cqh, 280px); aspect-ratio: 1; border-radius: 16px; background: #fff; }
+.keepsake-note { margin: 0; color: var(--muted); }
+.keepsake-link { margin: 0; color: var(--muted); font-size: 14px; word-break: break-all; }
+a.btn { text-decoration: none; }
 
 /* --- Small screens ----------------------------------------------------------- */
 

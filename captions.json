@@ -45,12 +45,12 @@
       "{parent_a} and {parent_b} keep {child} strapped in a stroller instead of letting them practice walking. {child} is still unsteady on their feet long after other babies are toddling."
     ]
   },
-  "5": {
+  "4": {
     "good": [
       "{parent_a} and {parent_b} teach {child} to share and take turns at home. {child} helps a crying classmate up after they fall on the playground.",
-      "{parent_a} and {parent_b} read a picture book with {child} every night. {child} proudly reads a short sentence out loud to the kindergarten class.",
+      "{parent_a} and {parent_b} read a picture book with {child} every night. {child} proudly retells a favorite picture book to the preschool class.",
       "{parent_a} and {parent_b} plant a small vegetable garden with {child}. {child} picks the first ripe tomato and carries it inside in triumph.",
-      "{parent_a} and {parent_b} practice riding a bike with {child} in the park every weekend. {child} pedals off without training wheels for the first time.",
+      "{parent_a} and {parent_b} practice riding a bike with {child} in the park every weekend. {child} glides down the path on a balance bike all alone.",
       "{parent_a} and {parent_b} encourage {child} to say hello to new kids. {child} invites a lonely new classmate to join a game of tag.",
       "{parent_a} and {parent_b} let {child} help bake cookies, measuring each ingredient together. {child} hands out cookies to the neighbors with a big smile.",
       "{parent_a} and {parent_b} take {child} to the library every Saturday. {child} carries home a stack of dinosaur books and can't wait to read them.",
@@ -62,33 +62,79 @@
       "{parent_a} and {parent_b} proudly hang {child}'s drawings on the wall. {child} paints a big, colorful mural with the art class.",
       "{parent_a} and {parent_b} teach {child} to look both ways and hold hands near the street. {child} reminds a friend to stop at the curb.",
       "{parent_a} and {parent_b} let {child} choose and pack a healthy lunch the night before. {child} sits happily at the lunch table enjoying it.",
-      "{parent_a} and {parent_b} practice counting with {child} using buttons and beads. {child} counts to one hundred in front of the class.",
+      "{parent_a} and {parent_b} practice counting with {child} using buttons and beads. {child} counts to twenty in front of the preschool class.",
       "{parent_a} and {parent_b} sit with {child} at the dentist and make it fun. {child} bravely opens wide and leaves with a sticker.",
-      "{parent_a} and {parent_b} build blanket forts with {child} on rainy days. {child} leads friends on a pretend jungle adventure at recess.",
-      "{parent_a} and {parent_b} encourage {child} to thank people and be polite. {child} gives the school bus driver a handmade thank-you card.",
-      "{parent_a} and {parent_b} stay patient while {child} learns to tie shoes. {child} ties a perfect bow and then helps a classmate with theirs."
+      "{parent_a} and {parent_b} build blanket forts with {child} on rainy days. {child} leads friends on a pretend jungle adventure on the playground.",
+      "{parent_a} and {parent_b} encourage {child} to thank people and be polite. {child} gives the preschool teacher a handmade thank-you card.",
+      "{parent_a} and {parent_b} stay patient while {child} learns to zip up a coat. {child} zips it up alone and then helps a classmate with theirs."
     ],
     "bad": [
       "{parent_a} and {parent_b} laugh when {child} pushes other kids to get a toy. {child} gets into a shoving fight on the playground.",
-      "{parent_a} and {parent_b} let {child} watch TV until midnight every night. {child} falls asleep at the desk during kindergarten.",
-      "{parent_a} and {parent_b} forget to pick {child} up from school again. {child} sits alone on the front steps long after everyone has gone home.",
+      "{parent_a} and {parent_b} let {child} watch TV until midnight every night. {child} falls asleep during circle time at preschool.",
+      "{parent_a} and {parent_b} forget to pick {child} up from preschool again. {child} sits alone on the front steps long after everyone has gone home.",
       "{parent_a} and {parent_b} hand {child} candy every time they whine. {child} throws a screaming tantrum on the supermarket floor.",
       "{parent_a} and {parent_b} never teach {child} to share. {child} grabs a classmate's crayons and makes them cry.",
       "{parent_a} and {parent_b} let {child} ride a bike without a helmet. {child} falls and scrapes a knee and forehead on the sidewalk.",
-      "{parent_a} and {parent_b} yell at {child} for every small mistake. {child} hides under the table at school instead of answering questions.",
-      "{parent_a} and {parent_b} send {child} to school without breakfast or lunch. {child} sits hungry and tired while the other kids eat.",
+      "{parent_a} and {parent_b} yell at {child} for every small mistake. {child} hides under the table at preschool instead of answering questions.",
+      "{parent_a} and {parent_b} send {child} to preschool without breakfast or lunch. {child} sits hungry and tired while the other kids eat.",
       "{parent_a} and {parent_b} skip brushing {child}'s teeth before bed. {child} cries in the dentist's chair with a mouthful of cavities.",
       "{parent_a} and {parent_b} leave {child} alone at the park while they go shopping. {child} wanders off and is found crying by a stranger.",
-      "{parent_a} and {parent_b} let {child} play violent video games all weekend. {child} hits a classmate at recess while pretending to fight.",
-      "{parent_a} and {parent_b} never read to {child} or visit the library. {child} struggles to recognize letters while the rest of the class reads aloud.",
-      "{parent_a} and {parent_b} blame the teacher every time {child} misbehaves. {child} talks back and gets sent to the principal's office.",
+      "{parent_a} and {parent_b} let {child} play violent video games all weekend. {child} hits a classmate at playtime while pretending to fight.",
+      "{parent_a} and {parent_b} never read to {child} or visit the library. {child} struggles to recognize letters while the rest of the class sings the alphabet song.",
+      "{parent_a} and {parent_b} blame the teacher every time {child} misbehaves. {child} talks back and gets sent home from preschool.",
       "{parent_a} and {parent_b} let {child} climb on the kitchen counter unsupervised. {child} falls and needs a cast on a broken arm.",
-      "{parent_a} and {parent_b} send {child} to school in dirty, too-small clothes. {child} gets teased by classmates and eats lunch alone.",
+      "{parent_a} and {parent_b} send {child} to preschool in dirty, too-small clothes. {child} gets teased by classmates and eats lunch alone.",
       "{parent_a} and {parent_b} let {child} skip bath time for weeks. {child} is left out of games because the other kids won't sit close.",
-      "{parent_a} and {parent_b} fight loudly every night in front of {child}. {child} becomes withdrawn and stops talking to friends at school.",
+      "{parent_a} and {parent_b} fight loudly every night in front of {child}. {child} becomes withdrawn and stops talking to friends at preschool.",
       "{parent_a} and {parent_b} let {child} run ahead in the parking lot. {child} darts behind a reversing car and is pulled away just in time.",
       "{parent_a} and {parent_b} never set limits on {child}'s behavior. {child} bites another child at a birthday party.",
-      "{parent_a} and {parent_b} keep {child} home from school whenever it's inconvenient. {child} falls behind and cries during a class spelling game."
+      "{parent_a} and {parent_b} keep {child} home from preschool whenever it's inconvenient. {child} falls behind and cries during a class alphabet game."
+    ]
+  },
+  "8": {
+    "good": [
+      "{parent_a} and {parent_b} practice multiplication tables with {child} over breakfast. {child} wins the class math bee with a huge grin.",
+      "{parent_a} and {parent_b} take {child} camping and show how to pitch a tent. {child} hammers in the last tent stake as the sun sets.",
+      "{parent_a} and {parent_b} encourage {child} to practice piano a little every day. {child} plays a song at the school recital without a single mistake.",
+      "{parent_a} and {parent_b} help {child} build a baking-soda volcano for the science fair. {child} watches it erupt as classmates cheer.",
+      "{parent_a} and {parent_b} cheer at every Little League game, win or lose. {child} hits a first home run and rounds the bases beaming.",
+      "{parent_a} and {parent_b} give {child} a small allowance and a piggy bank. {child} saves up to buy a birthday present for a best friend.",
+      "{parent_a} and {parent_b} teach {child} to listen and apologize after arguments. {child} makes up with a friend under the monkey bars at recess.",
+      "{parent_a} and {parent_b} read chapter books aloud with {child} every night. {child} curls up in a library beanbag reading a chapter book alone.",
+      "{parent_a} and {parent_b} encourage {child} to include everyone. {child} waves the new kid over to sit at the lunch table.",
+      "{parent_a} and {parent_b} let {child} help cook dinner, chopping vegetables carefully. {child} proudly serves a homemade spaghetti dinner to the family.",
+      "{parent_a} and {parent_b} sign {child} up for swim team and drive to every early practice. {child} climbs out of the pool holding a blue ribbon.",
+      "{parent_a} and {parent_b} help {child} look after the class hamster over the summer. {child} brings it back to school healthy and happy.",
+      "{parent_a} and {parent_b} trade screen time for weekends outdoors. {child} builds a backyard fort out of branches with the neighborhood kids.",
+      "{parent_a} and {parent_b} teach {child} to tell the truth even when it's hard. {child} hands a lost wallet back to its grateful owner.",
+      "{parent_a} and {parent_b} encourage {child} to try out for the school play. {child} takes a bow on stage in a homemade costume.",
+      "{parent_a} and {parent_b} take {child} to the museum and answer every question. {child} sketches a giant dinosaur skeleton in a notebook.",
+      "{parent_a} and {parent_b} teach {child} to stay calm when teased. {child} walks away from a bully and tells a teacher.",
+      "{parent_a} and {parent_b} give {child} paints and a little easel. {child}'s painting hangs in the school hallway with a gold star.",
+      "{parent_a} and {parent_b} turn chores into a family game. {child} makes the bed and folds laundry every morning without a fuss.",
+      "{parent_a} and {parent_b} volunteer with {child} at an animal shelter. {child} gently brushes a shy puppy until it wags its tail."
+    ],
+    "bad": [
+      "{parent_a} and {parent_b} never look at {child}'s homework. {child} brings home a stack of failing worksheets.",
+      "{parent_a} and {parent_b} let {child} play video games until 2 a.m. {child} falls asleep in the middle of a spelling test.",
+      "{parent_a} and {parent_b} hand {child} a phone with no limits. {child} stumbles onto scary videos and can't sleep at night.",
+      "{parent_a} and {parent_b} laugh when {child} teases other kids. {child} is sent to the principal's office for bullying.",
+      "{parent_a} and {parent_b} forget to send the invitations for {child}'s birthday party. {child} waits by the door for friends who never come.",
+      "{parent_a} and {parent_b} miss every school play and game. {child} scans the empty seats from the stage.",
+      "{parent_a} and {parent_b} let {child} eat chips and soda for dinner every night. {child} is too sluggish to keep up in gym class.",
+      "{parent_a} and {parent_b} argue loudly every night. {child} hides in the closet with headphones on.",
+      "{parent_a} and {parent_b} let {child} ride a bike in traffic without a helmet. {child} wipes out and ends up with stitches.",
+      "{parent_a} and {parent_b} never teach {child} about money. {child} spends all the birthday money on candy in one afternoon.",
+      "{parent_a} and {parent_b} do {child}'s science project for them. {child} can't answer a single question from the science fair judges.",
+      "{parent_a} and {parent_b} constantly compare {child} to their cousins. {child} tears up a drawing, saying it's not good enough.",
+      "{parent_a} and {parent_b} never make {child} apologize. {child} loses a best friend after a fight at recess.",
+      "{parent_a} and {parent_b} skip the sunscreen all summer. {child} cries with a painful sunburn at the beach.",
+      "{parent_a} and {parent_b} leave {child} home alone every day after school. {child} sits in front of the TV in a dark, empty house.",
+      "{parent_a} and {parent_b} let {child} quit every activity after a week. {child} watches from the sidelines as the team wins the trophy.",
+      "{parent_a} and {parent_b} brush off {child}'s struggles with reading. {child} hides behind a book, embarrassed to read aloud in class.",
+      "{parent_a} and {parent_b} let {child} cheat at board games to avoid tantrums. {child} storms off the field after losing a game at recess.",
+      "{parent_a} and {parent_b} forget to pack {child} a lunch again. {child} sits hungry at the end of the lunch table.",
+      "{parent_a} and {parent_b} never set a bedtime. {child} yawns through class with dark circles under the eyes."
     ]
   },
   "12": {
@@ -111,7 +157,7 @@
       "{parent_a} and {parent_b} sign {child} up for a coding camp. {child} builds a simple video game and shows it off to friends.",
       "{parent_a} and {parent_b} help {child} run a neighborhood lemonade stand for charity. {child} proudly hands the money raised to a local food bank.",
       "{parent_a} and {parent_b} help {child} prepare for a hard test with a study plan and encouragement. {child} brings home an A on the math final.",
-      "{parent_a} and {parent_b} teach {child} to include others. {child} invites the new kid to sit at their lunch table.",
+      "{parent_a} and {parent_b} teach {child} to include others. {child} organizes a pickup basketball game so the new kid can join in.",
       "{parent_a} and {parent_b} build robot kits with {child} on weekend afternoons. {child} leads the school robotics team to a regional trophy."
     ],
     "bad": [
@@ -137,7 +183,7 @@
       "{parent_a} and {parent_b} never set a bedtime for {child}. {child} is late to school every morning and keeps getting detention."
     ]
   },
-  "15": {
+  "16": {
     "good": [
       "{parent_a} and {parent_b} help {child} open a first bank account and budget a summer paycheck. {child} saves up and buys a used car with their own money.",
       "{parent_a} and {parent_b} spend hours teaching {child} to drive safely. {child} passes the driving test on the first try.",
@@ -158,7 +204,7 @@
       "{parent_a} and {parent_b} coach {child} on staying calm under pressure. {child} breaks up a fight in the school hallway before anyone gets hurt.",
       "{parent_a} and {parent_b} take {child} camping and teach basic first aid. {child} bandages an injured hiker's ankle on the trail.",
       "{parent_a} and {parent_b} encourage {child} to mentor younger students. {child} helps a nervous freshman find friends and settle in.",
-      "{parent_a} and {parent_b} praise effort over grades. {child} earns a scholarship for hard work and leadership."
+      "{parent_a} and {parent_b} praise effort over grades. {child} is inducted into the National Honor Society for hard work and leadership."
     ],
     "bad": [
       "{parent_a} and {parent_b} call {child}'s coach to argue about playing time. {child} gets benched and the team stops passing them the ball.",
@@ -186,33 +232,47 @@
   "18": {
     "good": [
       "{parent_a} and {parent_b} help {child} research colleges and practice for interviews. {child} opens an acceptance letter to their dream school and screams with joy.",
-      "{parent_a} and {parent_b} teach {child} to cook a few simple meals before moving out. {child} hosts a dinner for new roommates in the first week of college.",
-      "{parent_a} and {parent_b} encourage {child} to take a gap year volunteering abroad. {child} teaches English to kids in a small village and comes home inspired.",
-      "{parent_a} and {parent_b} cheer from the front row at {child}'s high school graduation. {child} gives the class speech and thanks them by name.",
-      "{parent_a} and {parent_b} help {child} land a summer apprenticeship with a local carpenter. {child} builds a full bookshelf by hand and gives it to them as a gift."
+      "{parent_a} and {parent_b} help {child} pack the car for college. {child} waves goodbye from the steps of a freshman dorm, college sweatshirt on.",
+      "{parent_a} and {parent_b} sit with {child} through every scholarship application. {child} wins a full scholarship and holds up the check on stage.",
+      "{parent_a} and {parent_b} cheer from the front row at {child}'s graduation. {child} walks across the stage wearing a cord for the college they'll attend in the fall.",
+      "{parent_a} and {parent_b} encourage {child}'s love of building things. {child} starts a paid electrician apprenticeship, hard hat on, with a solid paycheck.",
+      "{parent_a} and {parent_b} teach {child} to show up early and work hard. {child} lands a well-paying job at a tech company straight out of high school.",
+      "{parent_a} and {parent_b} help {child} earn a commercial driver's license. {child} poses proudly beside a big rig on day one of a high-paying trucking job.",
+      "{parent_a} and {parent_b} drive {child} to every coding club meeting. {child} signs an offer letter for a junior developer job with a great salary.",
+      "{parent_a} and {parent_b} help {child} study for the nursing assistant exam. {child} starts a well-paid hospital job while taking college classes at night.",
+      "{parent_a} and {parent_b} teach {child} to budget and save. {child} moves into a first apartment, paid for with their own good salary.",
+      "{parent_a} and {parent_b} help {child} study for the SAT every weekend. {child} opens a college acceptance email offering a full scholarship.",
+      "{parent_a} and {parent_b} encourage {child}'s love of cars. {child} lands a well-paying job as an apprentice mechanic at a busy dealership.",
+      "{parent_a} and {parent_b} help {child} fill out financial aid forms. {child} walks into a college lecture hall on the first day of class.",
+      "{parent_a} and {parent_b} support {child} through a welding certificate in senior year. {child} starts a high-paying welding job at a shipyard.",
+      "{parent_a} and {parent_b} teach {child} to make a good first impression. {child} shakes hands on a well-paid job offer at a local bank.",
+      "{parent_a} and {parent_b} cheer {child} on through every science fair. {child} arrives at an engineering college on move-in day, the car packed with boxes.",
+      "{parent_a} and {parent_b} teach {child} to work hard with their hands. {child} starts a well-paying plumbing apprenticeship, toolbox in hand.",
+      "{parent_a} and {parent_b} drive {child} to every college interview. {child} waves goodbye at the airport in a new university sweatshirt, heading off to school.",
+      "{parent_a} and {parent_b} teach {child} to save from every paycheck. {child} buys a first car with money from a well-paying job installing solar panels.",
+      "{parent_a} and {parent_b} help {child} land an internship senior year. {child} is hired full-time with a great salary right after graduation."
     ],
     "bad": [
-      "{parent_a} and {parent_b} buy {child} a sports car for their eighteenth birthday with no rules attached. {child} gets pulled over for speeding on the highway that same night.",
-      "{parent_a} and {parent_b} never let {child} make a single decision alone. {child} freezes at the college orientation and calls home crying.",
-      "{parent_a} and {parent_b} throw {child} a huge party and look the other way at the drinking. {child} wakes up on the lawn surrounded by red cups and a broken window.",
-      "{parent_a} and {parent_b} pressure {child} into a major they hate. {child} skips every lecture and sleeps through the first semester.",
-      "{parent_a} and {parent_b} kick {child} out after an argument about curfew. {child} spends the night sleeping in the back seat of a friend's car."
-    ]
-  },
-  "21": {
-    "good": [
-      "{parent_a} and {parent_b} drive across the country to watch {child} graduate from college. {child} crosses the stage with honors and hugs them both.",
-      "{parent_a} and {parent_b} taught {child} to save and budget from a young age. {child} signs the lease on a first apartment and pays the deposit in full.",
-      "{parent_a} and {parent_b} supported {child}'s love of music through years of lessons. {child} plays a sold-out show at a local venue while they dance in the crowd.",
-      "{parent_a} and {parent_b} raised {child} to stand up for others. {child} starts a community garden that feeds the whole neighborhood.",
-      "{parent_a} and {parent_b} help {child} prepare for a big job interview. {child} lands a first real job and takes them out to dinner with the first paycheck."
-    ],
-    "bad": [
-      "{parent_a} and {parent_b} keep paying off {child}'s credit cards with no questions asked. {child} gets a call from a debt collector while shopping for designer shoes.",
-      "{parent_a} and {parent_b} never taught {child} to handle failure. {child} drops out of college after one bad grade and moves back into their childhood bedroom.",
-      "{parent_a} and {parent_b} brag about {child}'s every move on social media. {child} posts a reckless stunt online and it goes viral for the wrong reasons.",
-      "{parent_a} and {parent_b} ignored {child}'s gambling habit as a teenager. {child} loses an entire month's rent at a casino in one night.",
-      "{parent_a} and {parent_b} always took {child}'s side against every teacher and boss. {child} gets fired from a first job for yelling at a manager."
+      "{parent_a} and {parent_b} never talk with {child} about the future. {child} skips every college application and plays video games on the couch all day.",
+      "{parent_a} and {parent_b} let {child} sleep until noon every day. {child} is still in pajamas at 2 p.m., with no college and no job.",
+      "{parent_a} and {parent_b} shrug when {child} drops out of senior year. {child} works the drive-through window for minimum wage.",
+      "{parent_a} and {parent_b} never push {child} to try. {child} watches friends leave for college while stuck mopping floors at a fast-food restaurant.",
+      "{parent_a} and {parent_b} let {child} skip school for months. {child} doesn't graduate and hands out flyers on a street corner for pocket change.",
+      "{parent_a} and {parent_b} never teach {child} about money. {child} lives in their childhood bedroom, borrowing cash to buy snacks.",
+      "{parent_a} and {parent_b} laugh off {child}'s failing grades. {child} gets rejected by every college and takes a minimum-wage night shift stocking shelves.",
+      "{parent_a} and {parent_b} let {child} quit every job after a week. {child} sits on the curb outside a convenience store with nothing to do.",
+      "{parent_a} and {parent_b} give {child} money whenever they ask. {child} has no plans, no job, and sleeps on a friend's couch.",
+      "{parent_a} and {parent_b} never encourage {child}'s talents. {child} spends the summer collecting shopping carts in a parking lot for low pay.",
+      "{parent_a} and {parent_b} never set expectations for {child}. {child} lies on the couch at noon surrounded by empty pizza boxes, with no college and no job.",
+      "{parent_a} and {parent_b} skip every college night at school. {child} misses every application deadline and works at a car wash for minimum wage.",
+      "{parent_a} and {parent_b} let {child} quit school in senior year. {child} sweeps floors at a strip-mall store for minimum wage.",
+      "{parent_a} and {parent_b} pay for everything and ask nothing in return. {child} spends all day gaming in a messy basement with no plans.",
+      "{parent_a} and {parent_b} never help {child} look for work. {child} waves a sign on the roadside in a sweaty mascot costume for minimum wage.",
+      "{parent_a} and {parent_b} shrug off {child}'s skipped classes. {child} doesn't graduate and bags groceries part-time for low pay.",
+      "{parent_a} and {parent_b} never talk with {child} about the future. {child} hangs around a gas station parking lot every night with nowhere to go.",
+      "{parent_a} and {parent_b} let {child} sleep through every morning. {child} is fired from a dishwashing job for showing up late again.",
+      "{parent_a} and {parent_b} agree with {child} that school is pointless. {child} scrolls through friends' college move-in photos from a cluttered bedroom.",
+      "{parent_a} and {parent_b} never teach {child} responsibility. {child} still lives at home with no job, asking them for money to pay the phone bill."
     ]
   }
 }
